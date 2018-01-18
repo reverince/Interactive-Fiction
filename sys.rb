@@ -209,7 +209,7 @@ def ipt_get(ipt)
 				found = true
 			else # 컨테이너 탐색
 				idx_containers_items = {}
-				@chara.room.container.each_with_index{|c, i| idx_c_i[i] = c.item.map(&:name).index(target) if c.open && c.item }
+				@chara.room.container.each_with_index{|c, i| idx_containers_items[i] = c.item.map(&:name).index(target) if c.open && c.item }
 				idx_containers_items.compact!
 				unless idx_containers_items.empty?
 					idx_container = idx_containers_items.keys[0]
