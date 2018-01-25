@@ -2,10 +2,10 @@ require_relative "sys"
 
 while !@chara
 	@map = Room
-	print "N 처음부터 / L 불러오기 / T 묘지 / Q 종료 >>"
+	print "N 처음부터 / L 불러오기 / T 묘지 / Q 종료 >> "
 	case (ipt = input)
 		when "N", /^처음/, /^새/
-			print "이름을 입력해 주세요. >>"
+			print "이름을 입력해 주세요. >> "
 			name = input
 			@chara = Player.new(name)
 			initialize_map
@@ -26,7 +26,7 @@ puts @chara.position
 
 loop do
 	sleep(0.5)
-	print "\n(도움 H) 어떻게 하시겠어요? >>"
+	print "\n(도움 H) 어떻게 하시겠어요? >> "
 	case (ipt = input)
 		when "H", /^도움/, /^명령/
 			puts "명령어로는 [S저장, C정보, I가방, W위치, Q종료, 본다/살핀다, 간다/이동, 줍는다/버린다, (~로 ~를) 연다]가 있습니다."

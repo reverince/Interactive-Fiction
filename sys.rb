@@ -18,7 +18,7 @@ def input
 		if ipt.valid_encoding?
 			break
 		else
-			print "미안하지만 다시 입력해 주세요. >>"
+			print "미안하지만 다시 입력해 주세요. >> "
 		end
 	end
 	ipt.chop.upcase
@@ -79,7 +79,7 @@ def save_tomb_file(will)
 end
 
 def quit_game
-	print "저장되지 않은 데이터는 사라져요. 계속할까요? (Q네/S저장/아니요) >>"
+	print "저장되지 않은 데이터는 사라져요. 계속할까요? (Q네/S저장/아니요) >> "
 	case (ipt = gets.chop.upcase)
 		when /^[QY]$/, /^네/
 			puts "* 종료합니다."
@@ -209,7 +209,7 @@ def ipt_get(ipt)
 				found = true
 			else # 컨테이너 탐색
 				idx_containers_items = {}
-				@chara.room.container.each_with_index{|c, i| idx_c_i[i] = c.item.map(&:name).index(target) if c.open && c.item }
+				@chara.room.container.each_with_index{|c, i| idx_containers_items[i] = c.item.map(&:name).index(target) if c.open && c.item }
 				idx_containers_items.compact!
 				unless idx_containers_items.empty?
 					idx_container = idx_containers_items.keys[0]
@@ -408,7 +408,7 @@ def battle(enemy)
 	sleep(1)
 	while @chara.hp > 0 and enemy.hp > 0 # 전투 루프
 		player_status = NORMAL
-		print "어떻게 하시겠어요? (A공격/S회피/D방어) >>"
+		print "어떻게 하시겠어요? (A공격/S회피/D방어) >> "
 		case (ipt = input)
 			when "A", /^공격/
 				player_attack(enemy)
