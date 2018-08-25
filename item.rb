@@ -29,9 +29,9 @@ class Container
   
   def info
     res = "< #{@name} > : #{@desc}"
-    res += "\n" + josa(@item.map(&:name).join(", "),"가") + " 들어 있어요." if @open and !@item.empty?
-    res += "\n" + "안에는 아무 것도 없어요." if @open and @item.empty?
-    res += "\n" + "닫혀 있어요." if !@open
+    res += "\n닫혀 있어요." if !@open
+    res += "\n안에는" + josa(@item.map(&:name).join(", "),"가") + " 들어 있어요." if @open and @item.any?
+    res += "\n안에는 아무 것도 없어요." if @open and @item.empty?
     
     res
   end
@@ -39,7 +39,7 @@ class Container
   def inspect
     if @open
       if @item
-        puts "* 안에는 " + josa(@item.map(&:name).join(", "), "가") + " 있어요."
+        puts "* 안에는 " + josa(@item.map(&:name).join(", "), "가") + " 들어 있어요."
       else
         puts "* 안에는 아무 것도 없어요."
       end

@@ -27,8 +27,8 @@ end
 def no_command
   "* 그런 명령어는 없어요."
 end
-def typing(str) #한 글자씩 출력
-  str.chars.each { |c| print c; sleep(1)}
+def typing(str)  # 한 글자씩 출력
+  str.chars.each { |c| print c; sleep(0.05)}
   puts ""
 end
 
@@ -105,7 +105,7 @@ def game_over
   print "유언 >>"
   while true
     will = input
-    break unless will.include? "|" # '|' 입력 불가.
+    break unless will.include? "|"  # '|' 입력 불가.
   end
   save_tomb_file(will)
   delete_save_file
@@ -115,7 +115,7 @@ end
 
 # 일반 커맨드
 
-def ipt_look(ipt) # 가방, 방, 컨테이너, 무기 조사
+def ipt_look(ipt)  # 가방, 방, 컨테이너, 무기 조사
   case ipt
   when /^나를/
     puts "* 괜찮아 보이네요."
@@ -136,7 +136,7 @@ def ipt_look(ipt) # 가방, 방, 컨테이너, 무기 조사
       puts @chara.room.container[idx_container].info
       found = true
     end
-    if @chara.room.container and !found # 컨테이너 안 아이템 조사
+    if @chara.room.container and !found  # 컨테이너 안 아이템 조사
       items_in_container = []
       @chara.room.container.find_all{|c| c.open}.each{|c| c.item.each{|i| items_in_container << i}}
       idx_item_in_container = items_in_container.map(&:name).index(target) if !items_in_container.empty?
@@ -202,37 +202,48 @@ def ipt_get(ipt)
     puts "* 농담이죠?"
   else
     found = false
-    target = ipt.split(/[을를]/)[0]
-    if @chara.room.item
-      if ( idx_item = @chara.room.item.map(&:name).index(target) )
-        puts josa(target, "를") + " 주웠어요."
-        @chara.get_item(@chara.room.item[idx_item])
-        @chara.room.item.delete_at(idx_item)
-        found = true
-      end
-    end
-    if @chara.room.container
-      if ( idx_item = @chara.room.container.map(&:name).index(target) )
-        puts josa(target, "는") + " 주울 수 없어요."
-        found = true
-      else # 컨테이너 탐색
-        idx_containers_items = {}
-        @chara.room.container.each_with_index{|c, i| idx_containers_items[i] = c.item.map(&:name).index(target) if c.open && c.item }
-        idx_containers_items.compact!
-        unless idx_containers_items.empty?
-          idx_container = idx_containers_items.keys[0]
-          idx_item = idx_containers_items.values[0]
-          @chara.get_item(@chara.room.container[idx_container].item[idx_item])
-          @chara.room.container[idx_container].item.delete_at(idx_item)
-          puts josa(target, "를") + " 주웠어요."
-          found = true
-        end
-      end
-    end
-    if !@chara.room.item && !@chara.room.container
+    if @chara.room.item.empty? && @chara.room.container.empty?
       puts "* 이 방에는 주울 물건이 없어요."
       found = true
+    else
+      /(?<target>[0-9]*[가-힣]+)[을를] +/ =~ ipt
+      if target
+        
+        if @chara.room.item
+          if ( idx_item = @chara.room.item.map(&:name).index(target) )
+            puts josa(target, "를") + " 주웠어요."
+            @chara.get_item(@chara.room.item[idx_item])
+            @chara.room.item.delete_at(idx_item)
+            found = true
+          end
+        end
+        if @chara.room.container && !found
+          if ( idx_item = @chara.room.container.map(&:name).index(target) )
+            puts josa(target, "는") + " 주울 수 없어요."
+            found = true
+          else  # 컨테이너 탐색
+            idx_containers_items = {}
+            @chara.room.container.each_with_index{ |c, i|
+              idx_containers_items[i] = c.item.map(&:name).index(target) if c.open && c.item
+            }
+            idx_containers_items.compact!
+            if idx_containers_items.any?
+              idx_container = idx_containers_items.keys[0]
+              idx_item = idx_containers_items.values[0]
+              @chara.get_item(@chara.room.container[idx_container].item[idx_item])
+              @chara.room.container[idx_container].item.delete_at(idx_item)
+              puts josa(target, "를") + " 주웠어요."
+              found = true
+            end
+          end
+        end
+          
+      else  # no target
+        puts "* 무엇을 주우실 건가요?"
+        found = true
+      end
     end
+    
     puts "* 그런 물건을 찾지 못했어요." unless found
   end
 end
@@ -244,8 +255,13 @@ def ipt_drop(ipt)
   when /^방을/, /^여[기길]/
     puts "* 농담이죠?"
   else
-    if @chara.inv
-      if ( idx_item = @chara.inv.map(&:name).index(target = ipt.split(/[을를]/)[0]) )
+    if @chara.inv.any?
+      /(?<target>[0-9]*[가-힣]+)[을를] +/ =~ ipt
+      /(?<place>[0-9]*[가-힣]+)에 +/ =~ ipt
+      puts target
+      puts place
+      idx_item = @chara.inv.map(&:name).index(target)
+      if idx_item
         puts josa(target, "를") + " 버렸어요."
         @chara.room.item << @chara.inv[idx_item]
         @chara.drop_item(idx_item)
@@ -301,42 +317,43 @@ def ipt_open(ipt)
   when /^나를/
     puts "* 시적이네요."
   when /^방을/, /^여[기길]/
-    puts "* 감금당한 상태는 아니에요."
-  when /^([가-힣]+)[로] +([가-힣]+)[을를]/, /^([가-힣]+)[을를] +([가-힣]+)[로]/
-    if (/^([가-힣]+)[로] +([가-힣]+)[을를]/).match? ipt
-      key = $1
-      target = $2
-    elsif (/^([가-힣]+)[을를] +([가-힣]+)[로]/).match? ipt
-      key = $2
-      target = $1
-    end
-    if target.is_a? String
-      target = target.split(/[을를]/)[0].strip
-    end
-    if @chara.inv
-      if ( idx_key = @chara.inv.map(&:name).index(key) )
-        if @chara.room.container
-          if ( idx_container = @chara.room.container.map(&:name).index(target) )
-            @chara.room.container[idx_container].try_unlock(@chara.inv[idx_key])
+    puts "* 갇힌 상태는 아니에요."
+  when /([0-9]*[가-힣]+)[을를]/
+    /(?<target>[0-9]*[가-힣]+)[을를] +/ =~ ipt
+    /(?<key>[0-9]*[가-힣]+)로 +/ =~ ipt
+    if key
+      key = key[0..-2] if key[-1] == "으"  # '으로'냐 '로'냐 그것이 문제로다
+      if @chara.inv.any?
+        if ( idx_key = @chara.inv.map(&:name).index(key) )
+          if @chara.room.container.any?
+            if ( idx_container = @chara.room.container.map(&:name).index(target) )
+              @chara.room.container[idx_container].try_unlock(@chara.inv[idx_key])
+            else
+              puts "* 그런 상자가 없어요."
+            end
           else
-            puts "* 그런 상자가 없어요."
+            puts "* 이 방에는 상자가 없어요."
           end
         else
-          puts "* 이 방에는 상자가 없어요."
+          puts "* 그런 열쇠는 가지고 있지 않아요."
         end
       else
         puts "* 그런 열쇠는 가지고 있지 않아요."
       end
-    else
-      puts "* 그런 열쇠는 가지고 있지 않아요."
+    else  # no key
+      if @chara.room.container.any?
+        if ( idx = @chara.room.container.map(&:name).index(target) )
+          @chara.room.container[idx].try_open
+        else
+          puts "* 그런 상자가 없어요."
+        end
+      else
+        puts "* 여기엔 상자가 없어요."
+      end
     end
   else
-    if @chara.room.container
-      if ( idx = @chara.room.container.map(&:name).index(target = ipt.split(/[을를]/)[0]) )
-        @chara.room.container[idx].try_open
-      else
-        puts "* 무엇을 여실 건가요?"
-      end
+    if @chara.room.container.any?
+      puts "* 무엇을 여실 건가요?"
     else
       puts "* 여기엔 상자가 없어요."
     end
@@ -375,60 +392,39 @@ def enemy_damage(enemy, mul=1)
 end
 
 def player_attack(enemy)
-  puts "* 당신이 " + josa(enemy.name, "를") + " 공격합니다!"
+  puts "* " + josa(@chara.name, "가") + " " + josa(enemy.name, "를") + " 공격합니다!"
   sleep(1)
   if enemy_hit(enemy)
     dmg = player_damage
     puts "* #{enemy.name}에게 #{dmg}의 데미지!"
     enemy.hp -= dmg
   else
-    puts "* 당신의 공격이 빗나갔습니다!"
+    puts "* #{@chara.name}의 공격이 빗나갔습니다!"
   end
 end
 
 def enemy_attack(enemy, player_status)
   puts "* " + josa(enemy.name, "가") + " 당신을 공격합니다!"
   sleep(1)
-  case player_status
-  when NORMAL
-    if player_hit(enemy)
-      puts "* #{dmg = enemy_damage(enemy)}의 데미지!"
-      @chara.hp -= dmg
-      puts "* #{@chara.name}의 체력이 #{@chara.hp} 남았어요!" if @chara.hp > 0
-      sleep(1)
-    else
-      puts "* #{enemy.name}의 공격을 피했습니다!"
-    end
-  when EVADING
-    if player_hit(enemy, EVADING_MUL)
-      puts "* #{dmg = enemy_damage(enemy)}의 데미지!"
-      @chara.hp -= dmg
-      puts "* #{@chara.name}의 체력이 #{@chara.hp} 남았어요!" if @chara.hp > 0
-      sleep(1)
-    else
-      puts "* #{enemy.name}의 공격을 피했습니다!"
-    end
-  when GUARDING
-    dmg = enemy_damage(enemy, GUARDING_MUL)
-    if dmg > 0
-      puts "* #{@chara.name}에게 #{dmg}의 데미지!"
-      @chara.hp -= dmg
-      sleep(1)
-      puts "* #{@chara.name}의 체력이 #{@chara.hp} 남았어요!" if @chara.hp > 0
-    else
-      puts "* 공격을 막아냈습니다!"
-    end
+  if player_hit(enemy, player_status)
+    puts "* #{dmg = enemy_damage(enemy)}의 데미지!"
+    @chara.hp -= dmg
+    puts "* #{@chara.name}의 체력이 #{@chara.hp} 남았어요!" if @chara.hp > 0
+    sleep(1)
+  else
+    puts "* #{enemy.name}의 공격을 피했습니다!"
   end
 end
 
 def battle(enemy)
   puts "* 야생의 " + josa(enemy.name, "가") + " 나타났다!"
   sleep(1)
-  while @chara.hp > 0 and enemy.hp > 0 # 전투 루프
+  while @chara.hp > 0 and enemy.hp > 0  # 전투 루프
     player_status = NORMAL
-    print "어떻게 하시겠어요? (A공격/S회피/D방어) >> "
+    print "어떻게 하시겠어요? (공격(A)/회피(S)/방어(D)) >> "
     case (ipt = input)
     when "A", /^공격/
+      player_status = NORMAL
       player_attack(enemy)
       sleep(1)
       puts "* #{enemy.name}의 체력이 #{enemy.hp} 남았어요!" if enemy.hp > 0

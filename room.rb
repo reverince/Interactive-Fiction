@@ -58,5 +58,5 @@ end
 def initialize_map
   startingRoom = Room.new("시작의 방", josa(@chara.name, "가") + " 깨어난 곳입니다.", 0, 0, item: [WoodenSword.new, WoodenKey.new])
   spiderRoom = Room.new("거미줄이 쳐진 방", "끈적합니다.", 0, 1, enemy: [GiantSpider.new], container: [WoodenChest.new(key: WoodenKey, item: [Coin.new(50)])])
-  emptyRoom = Room.new("빈 방", "휑한 방입니다.", 1, 0)
+  woodenSwordRoom = Room.new("목검의 방", "목검이 많은 방입니다.", 1, 0, item: [WoodenSword.new], container: [WoodenChest.new(key: WoodenKey, item: [WoodenSword.new, WoodenSword.new])])
 end
