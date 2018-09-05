@@ -1,3 +1,4 @@
+
 require_relative "sys"
 
 while !@chara

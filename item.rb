@@ -1,4 +1,6 @@
+
 #require 'active_support/inflector' # pluralize
+
 GOLD_UNIT = "원"
 
 class Item
