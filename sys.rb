@@ -1,7 +1,9 @@
+
 require "base64"
 require_relative "josa"
 require_relative "player"
 require_relative "room"
+
 SAVE_FILE_NAME = "save"
 TOMB_FILE_NAME = "tomb"
 
@@ -123,33 +125,44 @@ def ipt_look(ipt)  # 가방, 방, 컨테이너, 무기 조사
     puts @chara.position
   else
     found = false
-    idx_inv = @chara.inv.map(&:name).index(target = ipt.split(/[을를]/)[0]) if @chara.inv
-    idx_room = @chara.room.item.map(&:name).index(target) if @chara.room.item
-    idx_container = @chara.room.container.map(&:name).index(target) if @chara.room.container
-    if idx_inv
-      puts @chara.inv[idx_inv].info
+    if @chara.room.item.empty? && @chara.room.container.empty?
+      puts "* 이 방에는 볼 물건이 없어요."
       found = true
-    elsif idx_room
-      puts @chara.room.item[idx_room].info
-      found = true
-    elsif idx_container
-      puts @chara.room.container[idx_container].info
-      found = true
-    end
-    if @chara.room.container and !found  # 컨테이너 안 아이템 조사
-      items_in_container = []
-      @chara.room.container.find_all{|c| c.open}.each{|c| c.item.each{|i| items_in_container << i}}
-      idx_item_in_container = items_in_container.map(&:name).index(target) if !items_in_container.empty?
-      if idx_item_in_container
-        puts items_in_container[idx_item_in_container].info
-        found = true
+    else
+      /(?<target>[0-9]*[가-힣]+)[을를] +/ =~ ipt
+
+      if target
+        idx_inv = @chara.inv.map(&:name).index(target) if @chara.inv
+        idx_room = @chara.room.item.map(&:name).index(target) if @chara.room.item
+        idx_container = @chara.room.container.map(&:name).index(target) if @chara.room.container
+        if idx_inv
+          puts @chara.inv[idx_inv].info
+          found = true
+        elsif idx_room
+          puts @chara.room.item[idx_room].info
+          found = true
+        elsif idx_container
+          puts @chara.room.container[idx_container].info
+          found = true
+        end
+        if @chara.room.container and !found  # 컨테이너 안 아이템 조사
+          items_in_container = []
+          @chara.room.container.find_all{|c| c.open}.each{|c| c.item.each{|i| items_in_container << i}}
+          idx_item_in_container = items_in_container.map(&:name).index(target) if !items_in_container.empty?
+          if idx_item_in_container
+            puts items_in_container[idx_item_in_container].info
+            found = true
+          end
+        end
+        if @chara.weapon and @chara.weapon.name == target and !found
+          puts @chara.weapon.info + " [장비중]"
+          found = true
+        end
+        puts "* 그런 물건을 찾지 못했어요." unless found
+      else  # no target
+        puts "* 무엇을 볼까요?"
       end
     end
-    if @chara.weapon and @chara.weapon.name == target and !found
-      puts @chara.weapon.info + " [장비중]"
-      found = true
-    end
-    puts "* 그런 물건을 찾지 못했어요." unless found
   end
 end
 
@@ -190,7 +203,7 @@ def ipt_move(ipt)
   when "MN", /^북쪽/
     move(NORTH)
   else
-    puts "* 어느 쪽으로 가실 건가요?"
+    puts "* 어느 쪽으로 갈까요?"
   end
 end
 
@@ -207,8 +220,8 @@ def ipt_get(ipt)
       found = true
     else
       /(?<target>[0-9]*[가-힣]+)[을를] +/ =~ ipt
+      
       if target
-        
         if @chara.room.item
           if ( idx_item = @chara.room.item.map(&:name).index(target) )
             puts josa(target, "를") + " 주웠어요."
@@ -237,9 +250,8 @@ def ipt_get(ipt)
             end
           end
         end
-          
       else  # no target
-        puts "* 무엇을 주우실 건가요?"
+        puts "* 무엇을 주울까요?"
         found = true
       end
     end
@@ -266,7 +278,7 @@ def ipt_drop(ipt)
         @chara.room.item << @chara.inv[idx_item]
         @chara.drop_item(idx_item)
       else
-        puts "* 무엇을 버리실 건가요?"
+        puts "* 무엇을 버릴까요?"
       end
     else
       puts "* 버릴 물건이 없어요."
@@ -285,7 +297,7 @@ def ipt_equip(ipt)
       if ( idx_item = @chara.inv.map(&:name).index(target = ipt.split(/[을를]/)[0]) )
         @chara.equip_item(idx_item)
       else
-        puts "* 무엇을 장착하실 건가요?"
+        puts "* 무엇을 장착할까요?"
       end
     else
       puts "* 장착할 물건이 없어요."
@@ -304,7 +316,7 @@ def ipt_unequip(ipt)
       if @chara.weapon.name == ( target = ipt.split(/[을를]/)[0] )
         @chara.unequip_item(target)
       else
-        puts "* 무엇을 장착 해제하실 건가요?"
+        puts "* 무엇을 장착 해제할까요?"
       end
     else
       puts "* 아무 것도 장착하고 있지 않아요."
@@ -321,6 +333,7 @@ def ipt_open(ipt)
   when /([0-9]*[가-힣]+)[을를]/
     /(?<target>[0-9]*[가-힣]+)[을를] +/ =~ ipt
     /(?<key>[0-9]*[가-힣]+)로 +/ =~ ipt
+    
     if key
       key = key[0..-2] if key[-1] == "으"  # '으로'냐 '로'냐 그것이 문제로다
       if @chara.inv.any?
@@ -353,7 +366,7 @@ def ipt_open(ipt)
     end
   else
     if @chara.room.container.any?
-      puts "* 무엇을 여실 건가요?"
+      puts "* 무엇을 열까요?"
     else
       puts "* 여기엔 상자가 없어요."
     end
