@@ -1,4 +1,3 @@
-
 require "base64"
 require_relative "josa"
 require_relative "player"
