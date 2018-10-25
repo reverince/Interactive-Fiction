@@ -331,10 +331,9 @@ def ipt_open(ipt)
     puts "* 갇힌 상태는 아니에요."
   when /([0-9]*[가-힣]+)[을를]/
     /(?<target>[0-9]*[가-힣]+)[을를] +/ =~ ipt
-    /(?<key>[0-9]*[가-힣]+)로 +/ =~ ipt
+    /(?<key>[0-9]*[가-힣]+?)(으로|로) +/ =~ ipt
     
     if key
-      key = key[0..-2] if key[-1] == "으"  # '으로'냐 '로'냐 그것이 문제로다
       if @chara.inv.any?
         if ( idx_key = @chara.inv.map(&:name).index(key) )
           if @chara.room.container.any?
