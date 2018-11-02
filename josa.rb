@@ -6,22 +6,22 @@ JONG = ["", "ㄱ", "ㄲ", "ㄳ", "ㄴ", "ㄵ", "ㄶ", "ㄷ", "ㄹ", "ㄺ", "ㄻ"
 
 
 def josa(str, sel)
-	kr = str[-1].unpack("U")[0] - KR_OFFSET
-	
-	jong = kr % 28
-	jung = (kr - jong) / 28 % 21
-	cho = ( (kr - jong) / 28 - jong ) / 21
-	
-	case sel
-		when "은","는"
-			jong > 0 ? "#{str}은" : "#{str}는"
-		when "을", "를"
-			jong > 0 ? "#{str}을" : "#{str}를"
-		when "이", "가"
-			jong > 0 ? "#{str}이" : "#{str}가"
-		when "로", "으로"
-			jong > 0 ? "#{str}으로" : "#{str}로"
-	else
-		raise "josa 함수에 잘못된 조사 인자가 주어졌습니다"
-	end
+  kr = str[-1].unpack("U")[0] - KR_OFFSET
+  
+  jong = kr % 28
+  jung = (kr - jong) / 28 % 21
+  cho = ( (kr - jong) / 28 - jong ) / 21
+  
+  case sel
+    when "은","는"
+      jong > 0 ? "#{str}은" : "#{str}는"
+    when "을", "를"
+      jong > 0 ? "#{str}을" : "#{str}를"
+    when "이", "가"
+      jong > 0 ? "#{str}이" : "#{str}가"
+    when "로", "으로"
+      jong > 0 ? "#{str}으로" : "#{str}로"
+  else
+    raise "josa 함수에 잘못된 조사 인자가 주어졌습니다"
+  end
 end

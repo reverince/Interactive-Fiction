@@ -37,12 +37,12 @@ end
 # 시스템 커맨드
 
 def load_file
-  begin
+  if File.file?(SAVE_FILE_NAME)
     f = File.read(SAVE_FILE_NAME).split('|')
     @chara = Marshal.load(Base64.decode64(f[0]))
     @map.tiles = Marshal.load(Base64.decode64(f[1]))
     @chara and @map ? ( puts "* 데이터를 불러왔어요!" ) : ( raise StandardError "[DEBUG] 저장 파일이 손상되었습니다." )
-  rescue Errno::ENOENT
+  else
     puts "! 저장 파일을 찾을 수 없어요."
   end
 end

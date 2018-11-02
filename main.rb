@@ -1,9 +1,9 @@
 require_relative "sys"
 
 while !@chara
-	@map = Room
-	print "N 처음부터 / L 불러오기 / T 묘지 / Q 종료 >> "
-	case (ipt = input)
+  @map = Room
+  print "N 처음부터 / L 불러오기 / T 묘지 / Q 종료 >> "
+  case (ipt = input)
   when "N", /^처음/, /^새/
     print "이름을 입력해 주세요. >> "
     name = input
@@ -15,9 +15,9 @@ while !@chara
     load_tomb_file
   when "Q", /^종료/
     quit_game
-	else
-		puts no_command
-	end
+  else
+    puts no_command
+  end
 end  # of while
 
 puts "\n* 어서오세요, #{@chara.name}님."
@@ -25,9 +25,9 @@ sleep(0.5)
 puts @chara.position
 
 loop do
-	#sleep(0.5)
-	print "\n(도움 H) 어떻게 하시겠어요? >> "
-	case (ipt = input)
+  #sleep(0.5)
+  print "\n(도움 H) 어떻게 하시겠어요? >> "
+  case (ipt = input)
   when "H", /^도움/, /^명령/
     puts "명령어로는 [저장(S), 정보(C), 가방(I), 위치(W), 종료(Q), 본다/살핀다, 간다/이동, 줍는다/버린다, 장착한다/장착 해제한다, (~로 ~를) 연다]가 있습니다."
   when "S", /^저장/, /^기록/
@@ -54,7 +54,7 @@ loop do
     ipt_open(ipt)
   when "Q", /^종료/
     quit_game
-	else
+  else
     puts no_command
-	end
+  end
 end  # of loop
