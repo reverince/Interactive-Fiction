@@ -3,8 +3,8 @@ require_relative "josa"
 require_relative "player"
 require_relative "room"
 
-SAVE_FILE_NAME = "save"
-TOMB_FILE_NAME = "tomb"
+SAVE_FILE_NAME = __dir__ + "save.dat"
+TOMB_FILE_NAME = __dir__ + "tomb.dat"
 
 EAST = 0
 SOUTH = 1

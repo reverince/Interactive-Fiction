@@ -1,5 +1,5 @@
 goorm.manifest
 
-# Game files
-save
-tomb
+# Game data
+save.dat
+tomb.dat
